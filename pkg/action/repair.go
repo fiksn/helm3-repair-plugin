@@ -25,8 +25,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	"github.com/pmezard/go-difflib/difflib"
-	"helm.sh/helm/pkg/action"
-	"helm.sh/helm/pkg/release"
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/release"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -62,7 +62,8 @@ func (r *Repair) Run(name string) (*release.Release, bool, error) {
 		return nil, false, err
 	}
 
-	resources, err := r.cfg.KubeClient.Build(bytes.NewBufferString(rel.Manifest))
+	resources, err := r.cfg.KubeClient.Build(bytes.NewBufferString(rel.Manifest), true)
+
 	if err != nil {
 		return nil, false, errors.Wrap(err, "unable to build kubernetes objects from release manifest")
 	}
@@ -74,13 +75,22 @@ func (r *Repair) Run(name string) (*release.Release, bool, error) {
 		}
 
 		helper := resource.NewHelper(target.Client, target.Mapping)
-		current, err := helper.Get(target.Namespace, target.Name, target.Export)
+		current, err := helper.Get(target.Namespace, target.Name)
 		if apierrors.IsNotFound(err) {
-			if _, err := helper.Create(target.Namespace, true, target.Object, nil); err != nil {
-				return errors.Wrapf(err, "unable to recreate release resource %q", target.Name)
+			if !r.DryRun {
+				if _, err := helper.Create(target.Namespace, true, target.Object); err != nil {
+					return errors.Wrapf(err, "unable to recreate release resource %q", target.Name)
+				}
+				didRepair = true
+				return nil
+			} else {
+				empty := &unstructured.Unstructured{}
+				if err := printDiff(empty, target.Object); err != nil {
+					return errors.Wrapf(err, "unable to print diff for resource %q", target.Name)
+				}
+				didRepair = true
+				return nil
 			}
-			didRepair = true
-			return nil
 		} else if err != nil {
 			return errors.Wrapf(err, "unable to get release resource %q", target.Name)
 		}

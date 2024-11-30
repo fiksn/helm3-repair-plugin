@@ -5,8 +5,8 @@ The `repair` plugin repairs Helm releases whose resources have been changed outs
 ## Installation
 
 ```console
-go get -d https://github.com/joelanford/helm3-repair-plugin
-cd $GOPATH/src/github.com/joelanford/helm3-repair-plugin
+go get -d https://github.com/fiksn/helm3-repair-plugin
+cd $GOPATH/src/github.com/fiksn/helm3-repair-plugin
 make
 helm plugin install .
 ```

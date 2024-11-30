@@ -27,15 +27,16 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"helm.sh/helm/cmd/helm/require"
-	helmaction "helm.sh/helm/pkg/action"
-	"helm.sh/helm/pkg/cli"
-	"helm.sh/helm/pkg/kube"
-	"helm.sh/helm/pkg/storage"
-	"helm.sh/helm/pkg/storage/driver"
+	"helm.sh/helm/v3/cmd/helm/require"
+	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/storage"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+
 	"k8s.io/klog"
 
+	helmaction "helm.sh/helm/v3/pkg/action"
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
@@ -122,6 +123,7 @@ func initActionConfig(actionConfig *helmaction.Configuration, allNamespaces bool
 		// TODO return error
 		log.Fatal(err)
 	}
+
 	var namespace string
 	if !allNamespaces {
 		namespace = getNamespace()
@@ -153,7 +155,15 @@ func initActionConfig(actionConfig *helmaction.Configuration, allNamespaces bool
 
 func kubeConfig() genericclioptions.RESTClientGetter {
 	configOnce.Do(func() {
-		config = kube.GetConfig(settings.KubeConfig, settings.KubeContext, settings.Namespace)
+		settings = *cli.New()
+
+		cf := genericclioptions.NewConfigFlags(true)
+		cf.KubeConfig = &settings.KubeConfig
+		cf.Context = &settings.KubeContext
+		ns := settings.Namespace()
+		cf.Namespace = &ns
+
+		config = cf
 	})
 	return config
 }
