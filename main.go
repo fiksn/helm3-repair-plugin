@@ -40,7 +40,7 @@ import (
 	// Import to initialize client auth plugins.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	"github.com/joelanford/helm3-repair-plugin/pkg/action"
+	"github.com/fiksn/helm3-repair-plugin/pkg/action"
 )
 
 var (

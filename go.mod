@@ -1,4 +1,4 @@
-module github.com/joelanford/helm3-repair-plugin
+module github.com/fiksn/helm3-repair-plugin
 
 go 1.23.3
 
@@ -13,7 +13,7 @@ require (
 	k8s.io/client-go v0.31.1
 )
 
-require k8s.io/klog v1.0.0 // indirect
+require k8s.io/klog v1.0.0
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
