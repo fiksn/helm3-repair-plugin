@@ -1,6 +1,6 @@
 module github.com/fiksn/helm3-repair-plugin
 
-go 1.23.3
+go 1.22.0
 
 require (
 	github.com/ghodss/yaml v1.0.0
