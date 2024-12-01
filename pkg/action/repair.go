@@ -97,6 +97,15 @@ func (r *Repair) Run(name string) (*release.Release, bool, error) {
 
 		patch, err := generateStrategicMergePatch(current, target)
 		if err != nil {
+			if r.DryRun {
+				// no worries if the patch failed
+				if err := printDiff(current, target.Object); err != nil {
+					return errors.Wrapf(err, "unable to print diff for resource %q", target.Name)
+				}
+
+				didRepair = true
+				return nil
+			}
 			return errors.Wrapf(err, "unable to generate strategic merge patch for release resource %q", target.Name)
 		}
 
